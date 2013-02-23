@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="js/include/jquery.min.js"></script>
+<meta charset=utf-8 />
+<script src="js/include/processing.min.js"></script>
+<meta charset=utf-8 />
+<script src="js/dyui.js"></script>
+<meta charset=utf-8 />
+<title>JS Bin</title>
+  
+  <script>
+    $(function () {
+    var binds = {
+        "data1": "#FF0000",
+            "data2": "#00FF00",
+            "data3": "#0000FF",
+            "data4": "#FFFF00"
+    };
+
+    var target = document.getElementById('output');
+    
+    var output = DI.createOutput(target,[
+        {
+            type: "header",
+            binds: binds,
+            units: "units"
+        },
+        {
+            type: "line",
+            binds: binds,
+            max_age: 20000,
+            delay: 1000,
+            height: 200,
+            tick: 1000
+        },
+        {
+            type: "line",
+            binds: binds,
+            max_age: 10000,
+            delay: 1000,
+            height: 200,
+            tick: 1000
+        },
+        {
+            type: "line",
+            binds: binds,
+            max_age: 10000,
+            delay: 1000,
+            height: 200,
+            tick: 1000,
+            interpolation: "bezier"
+        },
+        {
+            type: "table",
+            binds: binds
+        }
+    ]);
+
+    setInterval(function () {
+        output.update({
+            data1: Math.random() * 100 - 50,
+            data2: Math.random() * 200 - 100,
+            data3: Math.random() * 150 - 75,
+            data4: Math.random() * 10
+        });
+    }, 1000);
+      
+    var input = DI.createInput(target,[
+      {
+        type: "form",
+        label: "Test Form",
+        parts: {
+          "First Field": {
+            name: "data1"
+          },
+          "Second Field": {
+            type: "select",
+            name: "data2",
+            options: [1,2,3,4,5]
+          },
+          "Test Fieldset": {
+            parts:{}
+          }
+          
+        },
+
+        submit : function(data){
+            console.log(data);
+        }
+      }
+    ]);
+    target.onclick = function(){input.submit(function(data){
+        alert(JSON.stringify(data));
+    });
+    };
+});
+  </script>
+  
+</head>
+<body>
+  <div id="output"></div>
+  <div id="input"></div>
+</body>
+</html>
+

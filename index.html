@@ -20,7 +20,7 @@
 
     var target = document.getElementById('output');
     
-    var output = DI.createOutput(target,[
+    var output = dyui.createOutput(target,[
         {
             type: "header",
             binds: binds,
@@ -66,7 +66,7 @@
         });
     }, 1000);
       
-    var input = DI.createInput(target,[
+    var input = dyui.createInput(target,[
       {
         type: "form",
         label: "Test Form",
@@ -90,10 +90,7 @@
         }
       }
     ]);
-    target.onclick = function(){input.submit(function(data){
-        alert(JSON.stringify(data));
-    });
-    };
+    target.onclick = function(){input.submit()};
 });
   </script>
   

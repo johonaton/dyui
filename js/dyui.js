@@ -288,7 +288,7 @@
         });
     }
 
-    var DI = {
+    var dyui = {
         inputs: {
           form: Form
         },
@@ -299,11 +299,11 @@
         }
     };
 
-    DI.createInput = function (target, inputs) {
+    dyui.createInput = function (target, inputs) {
         var handles = [];
         inputs.map(function(input){
-            if(DI.inputs[input.type]){
-                handles.push(DI.inputs[input.type](target,input));
+            if(dyui.inputs[input.type]){
+                handles.push(dyui.inputs[input.type](target,input));
             } else {
                throw TypeError("Unknown input type '" + options.chart + "'"); 
             }
@@ -321,11 +321,11 @@
         );
         
     };
-    DI.createOutput = function (target, outputs) {
+    dyui.createOutput = function (target, outputs) {
         var handles = [];
         outputs.map(function(output){
-            if(DI.outputs[output.type]){
-                handles.push(DI.outputs[output.type](target,output));
+            if(dyui.outputs[output.type]){
+                handles.push(dyui.outputs[output.type](target,output));
             } else {
                throw TypeError("Unknown input type '" + output.type + "'"); 
             }
@@ -344,6 +344,6 @@
     };
 
 
-    window.DI = DI;
+    window.dyui = dyui;
 })();   
 

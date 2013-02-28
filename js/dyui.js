@@ -140,7 +140,7 @@
         }
 
         function init(p) {
-            var W = (options.width || target.offsetWidth);
+            var W = (options.width || $target[0].offsetWidth);
             var H = (options.height || 100);
             p.setup = function () {
                 p.size(W, H);

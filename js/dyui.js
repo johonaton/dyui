@@ -1,5 +1,4 @@
-//processing.js helpers
-(function () {
+;(function ($,window,document,undefined) {
     function HexToRGB(HEX) {
         function hexToR(h) {
             return parseInt((cutHex(h)).substring(0, 2), 16);
@@ -26,7 +25,25 @@
         };
     }
 
-  
+    function serializeForm(form){
+        var o = {};
+        var a = $(form).serializeArray();
+        
+        $.each(a,function(i,v){
+            var path = v.name.split(".");
+            var depth = path.length;
+            var scope = o;
+            $.each(path,function(){
+                if(scope[this] === undefined){
+                    scope[this]= depth>1?{}:v.value;
+                }
+                scope=scope[this];
+                depth--;
+            });
+        });
+        return o;
+    }
+    
     function makeForm(element){
           var result;
           if(element.parts){
@@ -66,24 +83,7 @@
           }
           return result;
     }
-  
-  function serializeForm(form){
-    var result = {};
-    for(var e in form.elements){
-        console.log(form.elements[e].type);
-        switch(form.elements[e].type){
-        case "input":
-        case "select":
-        case "checkbox":
-        case "radio":
-        case "textarea":            
-            result[form.elements[e].name] = form.elements[e].value;
-            break;
-        default: break;
-        }
-    }
-    return result;
-  }
+    
     function Input(submit, reset, exit) {
         this.submit = submit;
         this.reset = reset;
@@ -106,15 +106,15 @@
     }
   
   
-    function Form(target,options){
+    function Form($target,options){
         var form = document.createElement('form');
         form.onsubmit = function(e){e.preventDefault; return false;} //suppress default submit
         form.appendChild(makeForm(options));
-        target.appendChild(form);
+        $target.append(form);
         return new Input(
           function(callback){
             var data = serializeForm(form);
-            if(options.submit) options.submit(data);
+            if(options.submit && options.submit instanceof Function) options.submit(data);
             if(callback && callback instanceof Function) callback(data);
           },
           function(){
@@ -126,9 +126,9 @@
         );
     }
 
-    function Line(target, options) {
+    function Line($target, options) {
         var c = document.createElement('canvas');
-        target.appendChild(c);
+        $target.append(c);
         var colors = {};
         var data = {};
         var maxScale = 1;
@@ -235,9 +235,9 @@
         });
     }
 
-    function Table(target, options) {
+    function Table($target, options) {
         var table = document.createElement("table");
-        target.appendChild(table);
+        $target.append(table);
         var rows = {};
         var labels = {};
         var vals = {};
@@ -264,9 +264,9 @@
         });
     }
 
-    function Header(target, options) {
+    function Header($target, options) {
         var header = document.createElement("p");
-        target.appendChild(header);
+        $target.append(header);
         header.setAttribute("style", "background:black;font-size:70%;margin:0;");
         var labels = {};
         for (var bind in options.binds) {
@@ -287,8 +287,8 @@
             header.innerHTML = "";
         });
     }
-
-    var dyui = {
+    //mappings to type constructors
+    var factory = {
         inputs: {
           form: Form
         },
@@ -299,11 +299,11 @@
         }
     };
 
-    dyui.createInput = function (target, inputs) {
+    factory.createInput = function ($target, inputs) {
         var handles = [];
         inputs.map(function(input){
-            if(dyui.inputs[input.type]){
-                handles.push(dyui.inputs[input.type](target,input));
+            if(factory.inputs[input.type]){
+                handles.push(factory.inputs[input.type]($target,input));
             } else {
                throw TypeError("Unknown input type '" + options.chart + "'"); 
             }
@@ -321,11 +321,11 @@
         );
         
     };
-    dyui.createOutput = function (target, outputs) {
+    factory.createOutput = function ($target, outputs) {
         var handles = [];
         outputs.map(function(output){
-            if(dyui.outputs[output.type]){
-                handles.push(dyui.outputs[output.type](target,output));
+            if(factory.outputs[output.type]){
+                handles.push(factory.outputs[output.type]($target,output));
             } else {
                throw TypeError("Unknown input type '" + output.type + "'"); 
             }
@@ -342,8 +342,17 @@
             }
         );
     };
-
-
-    window.dyui = dyui;
-})();   
+    
+    $.fn.dyui = function(method,options){
+        switch(method){
+        case "input":
+            factory.createInput(this,options,callback);
+            break;
+        case "output":
+            factory.createOutput(this,options,callback);
+            break;
+        }
+        return this;
+    };
+})(jQuery,window,document);
 

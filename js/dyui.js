@@ -121,7 +121,7 @@
             form.reset();
           },
           function(){
-            target.removeChild(form);
+            $target[0].removeChild(form);
           }
         );
     }
@@ -147,7 +147,7 @@
             };
             p.draw = function () {
                 p.smooth();
-                var w = (options.width || target.offsetWidth);
+                var w = (options.width || $target[0].offsetWidth);
                 var now = (new Date()).getTime();
                 if (W != w) {
                     W = w;

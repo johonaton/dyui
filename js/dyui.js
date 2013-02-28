@@ -63,11 +63,11 @@
             switch(element.type){
               case "select":
                 field = document.createElement('select');
-                if(element.options && element.options instanceof Array){
-                  element.options.map(function(option){
+                if(element.values && element.values instanceof Array){
+                  element.values.map(function(value){
                     var op = document.createElement('option');
-                    op.innerHTML = option;
-                    op.setAttribute("value",option);
+                    op.innerHTML = value;
+                    op.setAttribute("value",value);
                     field.appendChild(op);
                   });
                 }
@@ -80,7 +80,18 @@
             field.setAttribute("name",element.name);
             result.appendChild(label);
             result.appendChild(field);
+            if(element.optional){
+                $(label).addClass('optional');
+                $(label).click(function(e){
+                   if($(field).attr('disabled')){
+                       $(field).removeAttr('disabled');
+                   }else {
+                       $(field).attr('disabled','disabled');
+                    }
+                });
+            }
           }
+          
           return result;
     }
     

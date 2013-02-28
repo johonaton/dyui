@@ -19,8 +19,8 @@
     };
 
     var target = document.getElementById('output');
-    
-    var output = dyui.createOutput(target,[
+    var input,output;
+    $("#output").dyui("output",[
         {
             type: "header",
             binds: binds,
@@ -55,18 +55,17 @@
             type: "table",
             binds: binds
         }
-    ]);
-
-    setInterval(function () {
+    ],function(handle){
+      output = handle;
+      setInterval(function () {
         output.update({
             data1: Math.random() * 100 - 50,
             data2: Math.random() * 200 - 100,
             data3: Math.random() * 150 - 75,
             data4: Math.random() * 10
         });
-    }, 1000);
-    target = document.getElementById('input');
-    var input = dyui.createInput(target,[
+      }, 1000);
+    }).dyui("input",[
       {
         type: "form",
         label: "Test Form",
@@ -84,14 +83,17 @@
           }
           
         },
-
         submit : function(data){
             console.log(data);
         }
       }
-    ]);
-    
-    target.onclick = function(){input.submit()};
+    ],function(handle){
+      input = handle;
+      $('#test').click(function(e){
+        input.submit();
+        e.preventDefault();
+      });
+    });
 });
   </script>
   
@@ -99,7 +101,7 @@
 <body>
   <div id="output"></div>
   <div id="input"></div>
-  <a href="#">Test</a>
+  <a href="#" id="test">Test</a>
 </body>
 </html>
 

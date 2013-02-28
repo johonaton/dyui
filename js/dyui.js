@@ -343,13 +343,13 @@
         );
     };
     
-    $.fn.dyui = function(method,options){
+    $.fn.dyui = function(method,options,callback){
         switch(method){
         case "input":
-            factory.createInput(this,options,callback);
+            callback(factory.createInput(this,options));
             break;
         case "output":
-            factory.createOutput(this,options,callback);
+            callback(factory.createOutput(this,options));
             break;
         }
         return this;

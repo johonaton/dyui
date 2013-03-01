@@ -122,6 +122,7 @@
         form.onsubmit = function(e){e.preventDefault; return false;} //suppress default submit
         for(var p in form.parts){
             var part = form.parts[p];
+            part.label = part.label || p;
             form.appendChild(makeForm(part));
         }
         //form.appendChild(makeForm(options));

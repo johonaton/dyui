@@ -120,8 +120,8 @@
     function Form($target,options){
         var form = document.createElement('form');
         form.onsubmit = function(e){e.preventDefault; return false;} //suppress default submit
-        for(var p in form.parts){
-            var part = form.parts[p];
+        for(var p in options.parts){
+            var part = options.parts[p];
             part.label = part.label || p;
             form.appendChild(makeForm(part));
         }

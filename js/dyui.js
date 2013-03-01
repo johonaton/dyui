@@ -120,7 +120,11 @@
     function Form($target,options){
         var form = document.createElement('form');
         form.onsubmit = function(e){e.preventDefault; return false;} //suppress default submit
-        form.appendChild(makeForm(options));
+        for(var p in form.parts){
+            var part = form.parts[p];
+            form.appendChild(makeForm(part));
+        }
+        //form.appendChild(makeForm(options));
         $target.append(form);
         return new Input(
           function(callback){

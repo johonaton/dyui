@@ -25,6 +25,24 @@
         };
     }
 
+    
+    function arrayToObject(array){
+        var o = {};
+    	var a = array;
+    	$.each(a,function(i,v){
+            var path = v.name.split(".");
+            var depth = path.length;
+            var scope = o;
+            $.each(path,function(){
+                if(scope[this] === undefined){
+                    scope[this]= depth>1?{}:v.value;
+                }
+                scope=scope[this];
+                depth--;
+            });
+        });
+        return o;
+    }
     function serializeForm(form){
         var o = {};
         var a = $(form).serializeArray();
@@ -71,10 +89,26 @@
                     field.appendChild(op);
                   });
                 }
+                if(element.value) {
+                	field.value = element.value;
+                	field.setAttribute("value",element.value);
+                }
+              break;
+              case "textarea":
+            	 field = document.createElement('textarea');
+            	 if(element.cols)field.setAttribute("cols",element.cols);
+            	 if(element.rows)field.setAttribute("rows",element.rows);
+            	 if(element.value) {
+                 	field.innerHTML=element.value;
+                 }
               break;
               default: //default is "text" 
                 field = document.createElement('input');
                 field.setAttribute("type","text");
+                if(element.value) {
+                	field.value = element.value;
+                	field.setAttribute("value",element.value);
+                }
               break;
             }
             field.setAttribute("name",element.name);
@@ -89,6 +123,7 @@
                        $(field).attr('disabled','disabled');
                     }
                 });
+                $(field).attr('disabled','disabled');
             }
           }
           
@@ -101,8 +136,9 @@
         this.exit = exit;
 
         var itvl = -1;
-        this.start = function (poll, interval) {
-            itvl = setInterval(poll, interval);
+        this.start = function (pollfunc, interval) {
+        	clearInterval(itvl);
+            itvl = setInterval(pollfunc, interval);
         };
         this.stop = function () {
             clearInterval(itvl);
@@ -116,10 +152,12 @@
         this.exit = exit;
     }
   
-  
     function Form($target,options){
         var form = document.createElement('form');
-        form.onsubmit = function(e){e.preventDefault; return false;} //suppress default submit
+        $(form).submit(function(e){
+        	e.preventDefault(); 
+        	return false;
+        }); //suppress default submit
         for(var p in options.parts){
             var part = options.parts[p];
             part.label = part.label || p;
@@ -129,7 +167,7 @@
         $target.append(form);
         return new Input(
           function(callback){
-            var data = serializeForm(form);
+            var data = $(form).serializeArray();
             if(options.submit && options.submit instanceof Function) options.submit(data);
             if(callback && callback instanceof Function) callback(data);
           },
@@ -137,7 +175,7 @@
             form.reset();
           },
           function(){
-            $target[0].removeChild(form);
+            $(form).remove();
           }
         );
     }
@@ -194,7 +232,7 @@
                     p.strokeWeight(3);
                     p.strokeJoin("ROUND");
                     p.beginShape();
-                    var lx,ly;
+                    var lx = 0,ly = 0;
                     var x,y;
                     for (var pt in pts) {
                         var dat = pts[pt];
@@ -245,7 +283,9 @@
             }
 
         },
-
+        function (){
+        	//reset
+        },
         function () { //exit
             p_instance.exit();
         });
@@ -270,13 +310,19 @@
         function (d) {
             table.innerHTML = "";
             for (var bind in options.binds) {
-                vals[bind].innerHTML = d[bind];
-                table.appendChild(rows[bind]);
+            	if(d[bind] !== undefined){
+                    vals[bind].innerHTML = d[bind];
+                    table.appendChild(rows[bind]);
+            	}
             }
         },
 
         function () {
             table.innerHTML = "";
+        },
+        
+        function () {
+            $(table).remove();
         });
     }
 
@@ -298,17 +344,44 @@
                 labels[bind].innerHTML = bind + ": " + d[bind] + (options.units || "") + " ";
             }
         },
-
         function () {
-            header.innerHTML = "";
+        },
+        function () {
+            $(header).remove();
         });
     }
-    //mappings to type constructors
+    
+    function Age($target,options){
+    	var banner = document.createElement("p");
+    	banner.setAttribute("style", "font-size:70%;margin:0;");
+    	$target.append(banner);
+    	var then = (new Date()).getTime();
+    	var timer = setInterval(function(){
+    		var now = (new Date()).getTime();
+    		var age = now - then;
+    		banner.innerHTML = age/1000 + "s";
+    	},1000);
+    	return new Output(
+    		function (d){
+    			then = (new Date()).getTime();
+    		},
+    		function (){
+    			banner.innerHTML = "";
+    			then = (new Date()).getTime();
+    		},
+    		function (){
+    			clearInterval(timer);
+    			$(banner).remove();
+    		}
+    	);
+    }
+    //label mappings
     var factory = {
         inputs: {
           form: Form
         },
         outputs: {
+        	age: Age,
             line: Line,
             header: Header,
             table: Table
@@ -317,13 +390,14 @@
 
     factory.createInput = function ($target, inputs) {
         var handles = [];
-        inputs.map(function(input){
-            if(factory.inputs[input.type]){
+		for(var i in inputs){
+			var input = inputs[i];
+			if(factory.inputs[input.type]){
                 handles.push(factory.inputs[input.type]($target,input));
             } else {
-               throw TypeError("Unknown input type '" + options.chart + "'"); 
+               throw TypeError("Unknown input type '" + input.type + "'"); 
             }
-        });
+		}
         return new Input(
             function(callback){
                 for(var h in handles){handles[h].submit(callback);}
@@ -339,13 +413,14 @@
     };
     factory.createOutput = function ($target, outputs) {
         var handles = [];
-        outputs.map(function(output){
-            if(factory.outputs[output.type]){
-                handles.push(factory.outputs[output.type]($target,output));
-            } else {
-               throw TypeError("Unknown input type '" + output.type + "'"); 
-            }
-        });
+        for(var o in outputs){
+        	var output = outputs[o];
+	    	 if(factory.outputs[output.type]){
+	             handles.push(factory.outputs[output.type]($target,output));
+	         } else {
+	            throw TypeError("Unknown input type '" + output.type + "'"); 
+	         }
+        }
         return new Output(
             function(d){
                 for(var h in handles){handles[h].update(d);}

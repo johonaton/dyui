@@ -92,7 +92,9 @@
     ],function(handle){
       input = handle;
       $('#test').click(function(e){
-        input.submit();
+        input.submit(function(d){
+          alert(JSON.stringify(d));
+        });
         e.preventDefault();
       });
     });
